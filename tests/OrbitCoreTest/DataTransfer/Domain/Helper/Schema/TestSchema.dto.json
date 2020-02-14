@@ -1,0 +1,38 @@
+{
+  "transfers": [
+    {
+      "name": "Example",
+      "properties": [
+        {
+          "name": "Name",
+          "type": "string"
+        },
+        {
+          "name": "Active",
+          "type": "bool"
+        },
+        {
+          "name": "Company",
+          "type": "string",
+          "allowNull": true
+        },
+        {
+          "name": "Like",
+          "type": "string",
+          "collection": true
+        }
+      ]
+    },
+    {
+      "name": "SecondTest",
+      "properties": [
+        {
+          "name": "Employees",
+          "singleName": "Employee",
+          "type": "Example",
+          "collection": true
+        }
+      ]
+    }
+  ]
+}

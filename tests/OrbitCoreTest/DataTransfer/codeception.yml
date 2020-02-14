@@ -1,0 +1,23 @@
+namespace: OrbitCoreTest\DataTransfer
+
+paths:
+  tests: .
+  data: ../../_data
+  support: _support
+  log: ../../_output
+
+coverage:
+  enabled: true
+  remote: false
+  whitelist:
+    include:
+      - '../../../src/*'
+
+suites:
+  Domain:
+    path: Domain
+    class_name: DataTransferDomainTester
+    modules:
+      enabled:
+        - Asserts
+        - \OrbitCoreTest\Infrastructure\_support\Helper\Resolver\ResolverHelper
