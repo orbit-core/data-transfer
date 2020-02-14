@@ -4,6 +4,8 @@ declare(strict_types=1);
 namespace OrbitCore\DataTransfer\Domain\DataTransfer;
 
 
+use OrbitCore\DataTransfer\Domain\Writer\DataTransferWriter;
+
 abstract class AbstractDataTransfer implements DataTransferInterface
 {
     /**
@@ -16,7 +18,13 @@ abstract class AbstractDataTransfer implements DataTransferInterface
     public function fromArray(array $data): void
     {
         foreach ($data as $fieldName => $fieldValue) {
+            $fieldConfig = $this->getProperties()[$fieldName];
 
+            if ($fieldConfig['isCollection']) {
+                $this->fromArrayToCollection($fieldValue, $fieldConfig);
+            } else {
+                $this->fromArrayToSingleField($fieldConfig, $fieldName, $fieldValue);
+            }
         }
     }
 
@@ -76,6 +84,66 @@ abstract class AbstractDataTransfer implements DataTransferInterface
         }
 
         return $value;
+    }
+
+    /**
+     * @param $fieldValue
+     * @param $fieldConfig
+     */
+    protected function fromArrayToCollection($fieldValue, $fieldConfig): void
+    {
+        if (is_array($fieldValue)) {
+            if (in_array($fieldConfig['type'], DataTransferWriter::VALID_SIMPLE_TYPES)) {
+                foreach ($fieldValue as $fieldItem) {
+                    $this->{"add" . $fieldConfig['singleName']}($fieldItem);
+                }
+            } else {
+                $this->fromArrayToCollectionDataTransferObject($fieldValue, $fieldConfig);
+            }
+        }
+    }
+
+    /**
+     * @param $fieldValue
+     * @param $fieldConfig
+     */
+    protected function fromArrayToCollectionDataTransferObject($fieldValue, $fieldConfig): void
+    {
+        if (!class_exists($fieldConfig['type'])) {
+            if (class_exists($fieldConfig['validType']) && is_array($fieldValue)) {
+                foreach ($fieldValue as $fieldItem) {
+                    $subDto = new $fieldConfig['validType']();
+                    $subDto->fromArray($fieldItem);
+                    $this->{"add" . $fieldConfig['singleName']}($subDto);
+                }
+            }
+        } else {
+            foreach ($fieldValue as $fieldItem) {
+                $this->{"add" . $fieldConfig['singleName']}($fieldItem);
+            }
+        }
+    }
+
+    /**
+     * @param $fieldConfig
+     * @param $fieldName
+     * @param $fieldValue
+     */
+    protected function fromArrayToSingleField($fieldConfig, $fieldName, $fieldValue): void
+    {
+        if (in_array($fieldConfig['type'], DataTransferWriter::VALID_SIMPLE_TYPES)) {
+            $this->{"set" . $fieldName}($fieldValue);
+        } else {
+            if (!class_exists($fieldConfig['type'])) {
+                if (class_exists($fieldConfig['validType']) && is_array($fieldValue)) {
+                    $subDto = new $fieldConfig['validType']();
+                    $subDto->fromArray($fieldValue);
+                    $this->{"set" . $fieldName}($subDto);
+                }
+            } else {
+                $this->{"set" . $fieldName}($fieldValue);
+            }
+        }
     }
 
     /**

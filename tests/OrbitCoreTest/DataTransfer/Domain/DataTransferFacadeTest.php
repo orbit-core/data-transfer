@@ -110,6 +110,8 @@ class DataTransferFacadeTest extends Test
             $secondDto->getEmployees()
         );
 
+
+        $dtoArray = $secondDto->toArray();
         $this->assertEquals(
             [
                 'Employees' => [
@@ -123,7 +125,19 @@ class DataTransferFacadeTest extends Test
                     ]
                 ]
             ],
-            $secondDto->toArray()
+            $dtoArray
+        );
+
+        $newDto = new SecondTestDto();
+        $newDto->fromArray($dtoArray);
+
+        $this->assertEquals(
+            $example->getName(),
+            $newDto->getEmployees()[0]->getName()
+        );
+        $this->assertEquals(
+            $example->getLike(),
+            $newDto->getEmployees()[0]->getLike()
         );
 
         $facade->deleteDataTransferObjects();

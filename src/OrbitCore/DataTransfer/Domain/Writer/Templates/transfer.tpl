@@ -5,7 +5,7 @@ namespace {% namespace %};
 use \OrbitCore\DataTransfer\Domain\DataTransfer\AbstractDataTransfer;
 use \OrbitCore\DataTransfer\Domain\DataTransfer\RequiredPropertyNotDefinedException;
 
-final class {% transferName %}Dto extends AbstractDataTransfer
+final class {% transferName %}{% transferSuffix %} extends AbstractDataTransfer
 {
 {% properties %}
 {% methods %}

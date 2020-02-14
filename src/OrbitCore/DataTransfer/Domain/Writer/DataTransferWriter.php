@@ -16,7 +16,9 @@ class DataTransferWriter implements DataTransferWriterInterface
     protected const TEMPLATE_COLLECTION = 'collection.tpl';
     protected const FILE_EXTENSION = 'Dto.php';
 
-    protected const VALID_SIMPLE_TYPES = [
+    public const TRANSFER_CLASS_SUFFIX = 'Dto';
+
+    public const VALID_SIMPLE_TYPES = [
         'int',
         'double',
         'bool',
@@ -56,8 +58,13 @@ class DataTransferWriter implements DataTransferWriterInterface
 
             $config = $builder->transfer($transferName)->getConfig();
 
-            $transferContent = $this->fetchTransferContent($properties, $config, $propertiesContent, $methodsContent,
-                $transferName);
+            $transferContent = $this->fetchTransferContent(
+                $properties,
+                $config,
+                $propertiesContent,
+                $methodsContent,
+                $transferName
+            );
 
             $filename = $transferName . static::FILE_EXTENSION;
             file_put_contents($config->getGeneratePath() . '/' . $filename, $transferContent);
@@ -123,6 +130,7 @@ class DataTransferWriter implements DataTransferWriterInterface
             $propertiesContent = $this->fetchPropertyContents($config, $propertiesContent, $propertyName,
                 $propertyData);
             $methodsContent = $this->fetchMethodContents($config, $methodsContent, $propertyName, $propertyData);
+            $properties[$propertyName]['validType'] = $this->getValidType($propertyData['type'], $config);
         }
 
         return $this->fetchContent($config, static::TEMPLATE_TRANSFER, [
@@ -130,7 +138,8 @@ class DataTransferWriter implements DataTransferWriterInterface
             'namespace' => $config->getNamespace(),
             'properties' => $propertiesContent,
             'transferData' => var_export($properties, true),
-            'transferName' => $transferName
+            'transferName' => $transferName,
+            'transferSuffix' => static::TRANSFER_CLASS_SUFFIX
         ]);
     }
 
@@ -149,7 +158,7 @@ class DataTransferWriter implements DataTransferWriterInterface
             return $type;
         }
 
-        return '\\' . $config->getNamespace() . '\\' . $type . 'Dto';
+        return '\\' . $config->getNamespace() . '\\' . $type . static::TRANSFER_CLASS_SUFFIX;
     }
 
     protected function fetchContent(DataTransferConfigInterface $config, string $template, array $data): string
